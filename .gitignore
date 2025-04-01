@@ -1,0 +1,38 @@
+# Build artifacts
+build/
+*.o
+*.a
+*.so
+*.dylib
+*.dll
+*.exe
+*.out
+
+# CMake files
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+CTestTestfile.cmake
+install_manifest.txt
+Makefile
+
+# IDE files
+.vscode/
+.idea/
+*.suo
+*.user
+*.sln.docstates
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Test coverage reports
+*.gcno
+*.gcda
+*.gcov
+coverage/
+
+# Doxygen documentation
+docs/html/
+docs/latex/
