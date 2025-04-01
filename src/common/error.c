@@ -20,6 +20,8 @@ static const struct aws_error_info s_common_error_info[] = {
     {NULL, NULL, "AWS_ERROR_OOM", "Out of memory"},
     {NULL, NULL, "AWS_ERROR_UNKNOWN", "Unknown error"},
     {NULL, NULL, "AWS_ERROR_INVALID_ARGUMENT", "Invalid argument"},
+    {NULL, NULL, "AWS_ERROR_INVALID_INDEX", "Invalid index"},
+    {NULL, NULL, "AWS_ERROR_LIST_EMPTY", "List is empty"},
 };
 
 static const struct aws_error_info_list s_common_error_list = {

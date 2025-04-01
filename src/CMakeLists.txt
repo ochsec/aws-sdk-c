@@ -3,8 +3,13 @@
 
 # Define the core common library target
 add_library(aws-c-common
+    common/allocator.c
     common/memory.c
     common/error.c
+    common/string.c
+    common/date_time.c
+    common/array_list.c
+    common/logging.c
     # Add other core source files here
 )
 

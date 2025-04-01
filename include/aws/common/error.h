@@ -11,6 +11,10 @@
 
 AWS_EXTERN_C_BEGIN
 
+/* Standard operation results */
+#define AWS_OP_SUCCESS 0
+#define AWS_OP_ERR -1
+
 /* Represents the range of error codes for the aws-c-common library */
 #define AWS_C_COMMON_ERROR_CODE_BEGIN 0
 #define AWS_C_COMMON_ERROR_CODE_END 1023
@@ -31,6 +35,12 @@ enum aws_common_error {
 
     /* Invalid argument */
     AWS_ERROR_INVALID_ARGUMENT = AWS_C_COMMON_ERROR_CODE_BEGIN + 3,
+
+    /* Invalid index for array/list access */
+    AWS_ERROR_INVALID_INDEX = AWS_C_COMMON_ERROR_CODE_BEGIN + 4,
+
+    /* Operation on empty list/container */
+    AWS_ERROR_LIST_EMPTY = AWS_C_COMMON_ERROR_CODE_BEGIN + 5,
 
     /* TODO: Add more common error codes as needed */
 

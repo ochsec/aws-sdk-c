@@ -16,10 +16,12 @@ include_directories(include)
 
 # Add subdirectories
 add_subdirectory(src)
+# Add service subdirectories (add more as they are created)
+add_subdirectory(src/s3)
 
 if(ENABLE_TESTING)
     enable_testing()
-    add_subdirectory(tests)
+    # add_subdirectory(tests) # TODO: Add tests later
 endif()
 
 # Add examples subdirectory
