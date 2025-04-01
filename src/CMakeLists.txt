@@ -10,6 +10,11 @@ add_library(aws-c-common
     common/date_time.c
     common/array_list.c
     common/logging.c
+    common/byte_buf.c
+    common/math.c
+    common/hash_table.c
+    common/http.c
+    common/http_client.c
     # Add other core source files here
 )
 
