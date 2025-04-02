@@ -16,16 +16,12 @@
 AWS_EXTERN_C_BEGIN
 
 /* Define common macros */
-#define AWS_PRECONDITION(cond) do { if (!(cond)) { return NULL; } } while (0)
-#define AWS_POSTCONDITION(cond) do { if (!(cond)) { return NULL; } } while (0)
+#define AWS_PRECONDITION(cond) do { if (!(cond)) { return NULL; } } while (0) /* Reverted: Returns NULL for pointer functions */
+#define AWS_POSTCONDITION(cond) do { if (!(cond)) { return NULL; } } while (0) /* Reverted: Returns NULL for pointer functions */
 
-/* Define common types */
-struct aws_allocator {
-    void *(*mem_acquire)(struct aws_allocator *allocator, unsigned int size);
-    void (*mem_release)(struct aws_allocator *allocator, void *ptr);
-    void *(*mem_realloc)(struct aws_allocator *allocator, void *ptr, unsigned int old_size, unsigned int new_size);
-    void *impl;
-};
+
+/* Forward declare common types */
+struct aws_allocator;
 
 /* Memory management functions */
 AWS_COMMON_API void *aws_mem_acquire(struct aws_allocator *allocator, unsigned int size);

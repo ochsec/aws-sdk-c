@@ -42,6 +42,16 @@ enum aws_common_error {
     /* Operation on empty list/container */
     AWS_ERROR_LIST_EMPTY = AWS_C_COMMON_ERROR_CODE_BEGIN + 5,
 
+    /* Buffer errors */
+    AWS_ERROR_SHORT_BUFFER = AWS_C_COMMON_ERROR_CODE_BEGIN + 6,
+
+    /* Encoding errors */
+    AWS_ERROR_INVALID_BASE64_STR = AWS_C_COMMON_ERROR_CODE_BEGIN + 7,
+    AWS_ERROR_INVALID_HEX_STR = AWS_C_COMMON_ERROR_CODE_BEGIN + 8,
+
+    /* Postcondition failure (used by AWS_POSTCONDITION macro) */
+    AWS_ERROR_POSTCONDITION_FAILED = AWS_C_COMMON_ERROR_CODE_BEGIN + 9,
+
     /* TODO: Add more common error codes as needed */
 
     AWS_ERROR_LAST = AWS_C_COMMON_ERROR_CODE_END

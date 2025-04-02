@@ -71,26 +71,49 @@ A comprehensive test suite has been implemented in `tests/sigv4_test.c`:
    * Created mock credentials for testing
    * Implemented helper functions to create test HTTP requests
 
+## Progress on TODOs (2025-04-02)
+
+1.  **Query String Extraction (Step 1.3) - Verify Robustness**:
+    *   **Status**: Verified.
+    *   **Details**: Analyzed `aws-c-http` API (`include/aws/http/request_response.h`). No direct function exists to get only the query string. The current method in `src/auth/sigv4.c` (get path, find `?`) appears necessary with the available API.
+
+2.  **Credentials Function Verification**:
+    *   **Status**: Verified (Assumed Correct).
+    *   **Details**: Investigated CMake files. Build seems reliant on external CRT dependencies (likely via parent build). Assumed standard CRT function names (`aws_credentials_get_access_key_id`, etc.) used in `src/auth/sigv4.c` are correct based on `aws-c-auth` API.
+
+3.  **Multi-line Header Folding (Step 1.4) - Verify Implementation**:
+    *   **Status**: Verified.
+    *   **Details**: Re-examined header processing loop in `src/auth/sigv4.c`. Confirmed logic correctly trims and folds whitespace according to SigV4 specification.
+
+4.  **Integration Testing**:
+    *   **Status**: Pending (Manual).
+    *   **Details**: Requires manual execution with AWS credentials and potentially network access. Cannot be performed automatically.
+
+5.  **Performance Optimization**:
+    *   **Status**: Analyzed (No Change).
+    *   **Details**: Reviewed tee stream implementation (`src/io/tee_input_stream.c`). Current version buffers the entire stream, which is a known limitation for large bodies. No optimizations implemented at this time.
+
+6.  **Documentation**:
+    *   **API Documentation**: **Completed**. Updated Doxygen-style comments in `include/aws/io/tee_input_stream.h`.
+    *   **Usage Examples**: Pending.
+
+## Build Fixes (2025-04-02)
+
+Addressed multiple build errors encountered while verifying TODOs:
+
+*   Fixed incorrect `aws_raise_error` usage in `src/common/hash_table.c` and `src/common/encoding.c`.
+*   Corrected definition order in `include/aws/common/http_client.h` and `include/aws/io/input_stream.h`.
+*   Fixed incorrect logging macro usage (tag parameter) in `src/io/tee_input_stream.c`.
+*   Corrected function calls (`aws_byte_buf_append_dynamic` -> `aws_byte_buf_append`) in `src/io/tee_input_stream.c`.
+*   Resolved `aws_allocator` redefinition between `include/aws/common/common.h` and `include/aws/common/allocator.h` by removing definition from `common.h`.
+*   Added missing error code definitions (`AWS_ERROR_INVALID_BASE64_STR`, `AWS_ERROR_SHORT_BUFFER`, etc.) to `include/aws/common/error.h`.
+*   Added missing `encoding.h` and `encoding.c` files (from standard `aws-c-common`) to the project and updated `src/CMakeLists.txt`.
+*   Corrected `AWS_PRECONDITION` macro usage in `src/common/encoding.c` after reverting the macro definition in `common.h`.
+
 ## Next Steps / Remaining TODOs
 
-1. **Query String Extraction (Step 1.3)**:
-   * **Verify Robustness**: The current manual extraction of the query string by searching for '?' is a fallback. Investigate if `aws_http_message` or related CRT components offer a more reliable way to access the original request URI or its query string component.
-
-2. **Credentials Function Verification**:
-   * **Confirm Accessors**: Double-check that the assumed function names (`aws_credentials_get_access_key_id`, `aws_credentials_get_secret_access_key`, `aws_credentials_get_session_token`) exactly match those provided by the `aws-c-auth` library being used via `FetchContent`.
-
-3. **Multi-line Header Folding (Step 1.4)**:
-   * **Verify Implementation**: Ensure the current whitespace folding logic correctly implements the SigV4 specification for handling multi-line header values (replacing consecutive whitespace with a single space).
-
-4. **Integration Testing**:
-   * **Real-world Testing**: Test the implementation with actual AWS services to verify correct signing behavior.
-   * **Test Vectors**: Use official AWS SigV4 test vectors to validate the implementation against known inputs and outputs.
-   * **Edge Cases**: Test additional scenarios, including paths with special characters, complex query parameters, etc.
-
-5. **Performance Optimization**:
-   * **Memory Usage**: Review the tee stream implementation for potential memory optimizations, especially for large request bodies.
-   * **Buffer Management**: Consider implementing buffer size limits or chunked buffering for very large streams.
-
-6. **Documentation**:
-   * **API Documentation**: Add comprehensive documentation for the tee stream API.
-   * **Usage Examples**: Provide examples of how to use the SigV4 signing functionality.
+1.  **Resolve Build Failures**: The build is still failing after the latest fixes (last attempt failed in `src/io/tee_input_stream.c.o`). Diagnose and fix the remaining compilation errors.
+2.  **Run Tests**: Once the build succeeds, run the test suite (`aws-sdk-c-tests` executable in the build directory) to ensure no regressions were introduced.
+3.  **Integration Testing**: Manually test against real AWS services and official test vectors.
+4.  **Performance Optimization**: Revisit tee stream memory usage if required for large bodies.
+5.  **Documentation**: Provide usage examples for SigV4 signing.

@@ -106,7 +106,8 @@ static int s_hash_table_resize(struct aws_hash_table *map, size_t new_capacity) 
                  map->slots = old_slots;
                  map->capacity = old_capacity;
                  /* Need to restore size too - complex recovery */
-                 return aws_raise_error(AWS_ERROR_UNKNOWN);
+                 aws_raise_error(AWS_ERROR_UNKNOWN);
+                 return AWS_OP_ERR;
             }
             /* Move element to new slot */
             map->slots[new_index] = *old_slot;
@@ -221,7 +222,8 @@ int aws_hash_table_put(struct aws_hash_table *map, const void *key, void *value,
     size_t index;
     if (s_find_slot(map, key, hash_code, &index) != AWS_OP_SUCCESS) {
         /* Should not happen after resize check unless table was already full */
-        return aws_raise_error(AWS_ERROR_UNKNOWN); /* Or a specific "table full" error */
+        aws_raise_error(AWS_ERROR_UNKNOWN); /* Or a specific "table full" error */
+        return AWS_OP_ERR;
     }
 
     struct aws_hash_element *slot = &map->slots[index];

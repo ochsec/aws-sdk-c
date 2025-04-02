@@ -8,7 +8,8 @@
 
 #include <aws/common/exports.h>
 #include <aws/common/allocator.h>
-#include <aws/common/http.h> /* For aws_http_message */
+#include <aws/common/http.h> /* For aws_http_message, aws_http_header */
+#include <aws/common/byte_buf.h> /* For aws_byte_cursor */
 
 AWS_EXTERN_C_BEGIN
 
@@ -16,7 +17,16 @@ AWS_EXTERN_C_BEGIN
 struct aws_http_client;
 struct aws_http_connection; /* Represents a single connection */
 struct aws_http_stream; /* Represents a single request/response stream on a connection */
-struct aws_http_client_connection_options; /* Options for acquiring a connection */
+
+/* --- Enum Definitions --- */
+
+/** Enum for header block type */
+enum aws_http_header_block {
+    AWS_HTTP_HEADER_BLOCK_UNKNOWN = 0,
+    AWS_HTTP_HEADER_BLOCK_MAIN,      /* Main request/response headers */
+    AWS_HTTP_HEADER_BLOCK_INFORMATIONAL, /* 1xx headers */
+    AWS_HTTP_HEADER_BLOCK_TRAILING,  /* Trailing headers */
+};
 
 /* --- Callback Function Types --- */
 
@@ -35,7 +45,7 @@ typedef void(aws_http_on_client_connection_shutdown_fn)(
 /** Invoked when an incoming header block is received on a stream. */
 typedef int(aws_http_on_incoming_headers_fn)(
     struct aws_http_stream *stream,
-    enum aws_http_header_block header_block, /* Need to define this enum */
+    enum aws_http_header_block header_block, /* Now defined */
     const struct aws_http_header *header_array,
     size_t num_headers,
     void *user_data);
@@ -43,7 +53,7 @@ typedef int(aws_http_on_incoming_headers_fn)(
 /** Invoked when an incoming header block is completely received. */
 typedef int(aws_http_on_incoming_header_block_done_fn)(
     struct aws_http_stream *stream,
-    enum aws_http_header_block header_block,
+    enum aws_http_header_block header_block, /* Now defined */
     void *user_data);
 
 /** Invoked when incoming body data is received on a stream. */
@@ -57,6 +67,28 @@ typedef void(aws_http_on_stream_complete_fn)(
     struct aws_http_stream *stream,
     int error_code,
     void *user_data);
+
+
+/* --- Options Structures --- */
+
+/** Options for acquiring an HTTP connection. */
+struct aws_http_client_connection_options {
+    struct aws_allocator *allocator;
+    /* TODO: Add actual options like host, port, socket_options, tls_connection_options */
+    size_t initial_window_size; /* Optional: Initial window size for HTTP/2 */
+    void *user_data;
+    aws_http_on_client_connection_shutdown_fn *on_shutdown;
+};
+
+/** Options for making an HTTP request on a connection. */
+struct aws_http_make_request_options {
+    struct aws_http_message *request; /* The request message to send */
+    void *user_data;
+    aws_http_on_incoming_headers_fn *on_response_headers;
+    aws_http_on_incoming_header_block_done_fn *on_response_header_block_done;
+    aws_http_on_incoming_body_fn *on_response_body;
+    aws_http_on_stream_complete_fn *on_complete;
+};
 
 
 /* --- HTTP Client --- */
@@ -112,7 +144,7 @@ struct aws_http_connection_vtable {
     /* Creates a new stream (request) on this connection. */
     struct aws_http_stream *(*make_request)(
         struct aws_http_connection *connection,
-        const struct aws_http_make_request_options *options); /* Need to define options */
+        const struct aws_http_make_request_options *options); /* Options struct now defined */
 };
 
 /** Base structure for HTTP connections. */
@@ -180,33 +212,6 @@ int aws_http_stream_get_response_status(const struct aws_http_stream *stream, in
 /** Gets the connection associated with this stream. */
 AWS_COMMON_API
 struct aws_http_connection *aws_http_stream_get_connection(const struct aws_http_stream *stream);
-
-
-/* --- Options Structures (Need full definitions) --- */
-
-struct aws_http_client_connection_options {
-    struct aws_allocator *allocator;
-    /* Host, port, TLS options, etc. */
-    void *user_data;
-    aws_http_on_client_connection_shutdown_fn *on_shutdown;
-};
-
-struct aws_http_make_request_options {
-    struct aws_http_message *request; /* The request message to send */
-    void *user_data;
-    aws_http_on_incoming_headers_fn *on_response_headers;
-    aws_http_on_incoming_header_block_done_fn *on_response_header_block_done;
-    aws_http_on_incoming_body_fn *on_response_body;
-    aws_http_on_stream_complete_fn *on_complete;
-};
-
-/* Enum for header block type */
-enum aws_http_header_block {
-    AWS_HTTP_HEADER_BLOCK_UNKNOWN = 0,
-    AWS_HTTP_HEADER_BLOCK_MAIN,      /* Main request/response headers */
-    AWS_HTTP_HEADER_BLOCK_INFORMATIONAL, /* 1xx headers */
-    AWS_HTTP_HEADER_BLOCK_TRAILING,  /* Trailing headers */
-};
 
 
 AWS_EXTERN_C_END

@@ -25,6 +25,36 @@ enum aws_stream_seek_basis {
     AWS_SSB_END = 2,     /* Seek from the end of the stream */
 };
 
+/* Forward declare the vtable */
+struct aws_input_stream_vtable;
+
+/**
+ * Base structure for input streams.
+ * Concrete implementations embed this as their first member.
+ */
+struct aws_input_stream {
+    const struct aws_input_stream_vtable *vtable;
+    struct aws_allocator *allocator;
+    void *impl; /* Pointer to implementation-specific data */
+};
+
+/**
+ * Stream capabilities and status flags.
+ */
+enum aws_stream_status_flags {
+    AWS_STREAM_STATUS_SEEKABLE = 0x00000001,     /* Stream supports seeking */
+    AWS_STREAM_STATUS_KNOWN_LENGTH = 0x00000002, /* Stream has a known length */
+    AWS_STREAM_STATUS_EOF = 0x00000004,          /* Stream is at EOF */
+};
+
+/**
+ * Stream status information.
+ */
+struct aws_stream_status {
+    uint32_t flags; /* Bitwise OR of aws_stream_status_flags */
+};
+
+
 /**
  * Virtual function table for an input stream implementation.
  */
@@ -70,32 +100,6 @@ struct aws_input_stream_vtable {
      * Destroys the stream.
      */
     void (*destroy)(struct aws_input_stream *stream);
-};
-
-/**
- * Base structure for input streams.
- * Concrete implementations embed this as their first member.
- */
-struct aws_input_stream {
-    const struct aws_input_stream_vtable *vtable;
-    struct aws_allocator *allocator;
-    void *impl; /* Pointer to implementation-specific data */
-};
-
-/**
- * Stream capabilities and status flags.
- */
-enum aws_stream_status_flags {
-    AWS_STREAM_STATUS_SEEKABLE = 0x00000001,     /* Stream supports seeking */
-    AWS_STREAM_STATUS_KNOWN_LENGTH = 0x00000002, /* Stream has a known length */
-    AWS_STREAM_STATUS_EOF = 0x00000004,          /* Stream is at EOF */
-};
-
-/**
- * Stream status information.
- */
-struct aws_stream_status {
-    uint32_t flags; /* Bitwise OR of aws_stream_status_flags */
 };
 
 /**
