@@ -15,6 +15,10 @@ add_library(aws-c-common
     common/hash_table.c
     common/http.c
     common/http_client.c
+    # IO components
+    io/tee_input_stream.c
+    # Auth components
+    auth/sigv4.c
     # Add other core source files here
 )
 
@@ -39,6 +43,16 @@ install(TARGETS aws-c-common
 # Installation rules for public headers
 # Install common headers
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../include/aws/common
+    DESTINATION include/aws
+    FILES_MATCHING PATTERN "*.h"
+)
+# Install IO headers
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../include/aws/io
+    DESTINATION include/aws
+    FILES_MATCHING PATTERN "*.h"
+)
+# Install Auth headers
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/../include/aws/auth
     DESTINATION include/aws
     FILES_MATCHING PATTERN "*.h"
 )

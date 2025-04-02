@@ -629,30 +629,77 @@ headers_cleanup:
         }
 
         if (body_stream) {
-            // **********************************************************************
-            // TODO: CRITICAL - Streaming Body Handling Needed!
-            // aws_sha256_compute reads the entire stream, which prevents it from
-            // being sent later if it's a single-read stream (like network).
-            // A proper solution requires either:
-            // 1. Using a tee-stream adapter.
-            // 2. Implementing SigV4 chunked signing (requires STREAMING-AWS4-HMAC-SHA256-PAYLOAD).
-            // 3. Requiring the caller to pre-calculate the hash and set the x-amz-content-sha256 header.
-            // For now, we proceed with the consuming compute, assuming the caller handles it or uses streams that can be reset.
-            // **********************************************************************
-            AWS_LOGF_WARN(AWS_LS_AUTH_SIGV4, "Hashing non-empty request body. This consumes the stream! Proper streaming support is needed.");
-            if (aws_sha256_compute(allocator, body_stream, &payload_hash_raw_buf, 0)) {
+            // Use our tee_input_stream to handle streaming bodies
+            // This allows us to read the stream for hashing without consuming it
+            AWS_LOGF_DEBUG(AWS_LS_AUTH_SIGV4, "Using tee stream to hash request body without consuming it.");
+            
+            // Check if the stream is already a tee stream
+            bool is_tee_stream = aws_input_stream_is_tee_stream(body_stream);
+            struct aws_input_stream *hash_stream;
+            
+            if (is_tee_stream) {
+                // If it's already a tee stream, create a new branch for hashing
+                AWS_LOGF_TRACE(AWS_LS_AUTH_SIGV4, "Body is already a tee stream, creating branch for hashing.");
+                hash_stream = aws_tee_input_stream_new_branch(body_stream);
+                if (!hash_stream) {
+                    AWS_LOGF_ERROR(AWS_LS_AUTH_SIGV4, "Failed to create branch from tee stream.");
+                    aws_byte_buf_clean_up(&payload_hash_raw_buf);
+                    aws_byte_buf_clean_up(&payload_hash_hex_buf);
+                    aws_byte_buf_clean_up(&canonical_request_buf);
+                    aws_byte_buf_clean_up(&signed_headers_buf);
+                    return AWS_OP_ERR;
+                }
+            } else {
+                // If it's not a tee stream, create a new tee stream
+                AWS_LOGF_TRACE(AWS_LS_AUTH_SIGV4, "Creating new tee stream for body.");
+                struct aws_input_stream *tee_stream = aws_tee_input_stream_new(allocator, body_stream);
+                if (!tee_stream) {
+                    AWS_LOGF_ERROR(AWS_LS_AUTH_SIGV4, "Failed to create tee stream.");
+                    aws_byte_buf_clean_up(&payload_hash_raw_buf);
+                    aws_byte_buf_clean_up(&payload_hash_hex_buf);
+                    aws_byte_buf_clean_up(&canonical_request_buf);
+                    aws_byte_buf_clean_up(&signed_headers_buf);
+                    return AWS_OP_ERR;
+                }
+                
+                // Create a branch for hashing
+                hash_stream = aws_tee_input_stream_new_branch(tee_stream);
+                if (!hash_stream) {
+                    AWS_LOGF_ERROR(AWS_LS_AUTH_SIGV4, "Failed to create branch from tee stream.");
+                    aws_input_stream_destroy(tee_stream);
+                    aws_byte_buf_clean_up(&payload_hash_raw_buf);
+                    aws_byte_buf_clean_up(&payload_hash_hex_buf);
+                    aws_byte_buf_clean_up(&canonical_request_buf);
+                    aws_byte_buf_clean_up(&signed_headers_buf);
+                    return AWS_OP_ERR;
+                }
+                
+                // Replace the original stream with the tee stream in the request
+                if (aws_http_message_set_body_stream(request, tee_stream)) {
+                    AWS_LOGF_ERROR(AWS_LS_AUTH_SIGV4, "Failed to set tee stream as request body.");
+                    aws_input_stream_destroy(hash_stream);
+                    aws_input_stream_destroy(tee_stream);
+                    aws_byte_buf_clean_up(&payload_hash_raw_buf);
+                    aws_byte_buf_clean_up(&payload_hash_hex_buf);
+                    aws_byte_buf_clean_up(&canonical_request_buf);
+                    aws_byte_buf_clean_up(&signed_headers_buf);
+                    return AWS_OP_ERR;
+                }
+            }
+            
+            // Now hash the branch stream
+            if (aws_sha256_compute(allocator, hash_stream, &payload_hash_raw_buf, 0)) {
                 AWS_LOGF_ERROR(AWS_LS_AUTH_SIGV4, "Failed to compute SHA256 hash of request body.");
+                aws_input_stream_destroy(hash_stream);
                 aws_byte_buf_clean_up(&payload_hash_raw_buf);
                 aws_byte_buf_clean_up(&payload_hash_hex_buf);
                 aws_byte_buf_clean_up(&canonical_request_buf);
                 aws_byte_buf_clean_up(&signed_headers_buf);
                 return AWS_OP_ERR;
             }
-             // Attempt to reset stream if possible (best effort, may fail)
-             if (aws_input_stream_seek(body_stream, 0, AWS_SSB_BEGIN)) {
-                 AWS_LOGF_WARN(AWS_LS_AUTH_SIGV4, "Failed to seek body stream back to beginning after hashing. Error: %s", aws_error_debug_str(aws_last_error()));
-                 aws_reset_error(); // Don't fail the signing for seek failure, but log it.
-             }
+            
+            // Clean up the hash stream
+            aws_input_stream_destroy(hash_stream);
             AWS_LOGF_TRACE(AWS_LS_AUTH_SIGV4, "Computed payload hash for stream.");
 
         } else {
