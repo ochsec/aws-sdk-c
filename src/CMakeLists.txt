@@ -17,6 +17,7 @@ add_library(aws-c-common
     common/http_client.c
     common/encoding.c # Added for hex/base64 encoding
     # IO components
+    io/io.c
     io/tee_input_stream.c
     # Auth components
     auth/sigv4.c

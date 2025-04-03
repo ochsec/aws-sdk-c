@@ -4,19 +4,16 @@
  */
 
 #include <aws/io/tee_input_stream.h>
+#include <aws/io/io.h> // Include the new IO header
 #include <aws/common/byte_buf.h> /* Needed for aws_byte_buf_* functions */
 #include <aws/common/logging.h>
 #include <aws/common/error.h>
 
 /* Define logging source for IO operations */
-#define AWS_LS_IO_GENERAL 0x1000
+#define AWS_LS_IO_GENERAL 0x1000 // Assuming this is defined elsewhere or should be moved
 #define AWS_LS_IO_TEE_STREAM (AWS_LS_IO_GENERAL + 1)
 
-/* Define error codes for stream operations */
-#define AWS_ERROR_STREAM_READ_FAILED 0x2001
-#define AWS_ERROR_STREAM_UNSEEKABLE 0x2002
-#define AWS_ERROR_STREAM_UNKNOWN_LENGTH 0x2003
-#define AWS_ERROR_STREAM_SEEK_FAILED 0x2004
+/* Error codes are now defined in aws/io/io.h */
 
 /**
  * Main tee stream structure that holds the source stream and buffered data.

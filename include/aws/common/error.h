@@ -48,9 +48,10 @@ enum aws_common_error {
     /* Encoding errors */
     AWS_ERROR_INVALID_BASE64_STR = AWS_C_COMMON_ERROR_CODE_BEGIN + 7,
     AWS_ERROR_INVALID_HEX_STR = AWS_C_COMMON_ERROR_CODE_BEGIN + 8,
+    AWS_ERROR_INVALID_DATE_STR = AWS_C_COMMON_ERROR_CODE_BEGIN + 9,
 
     /* Postcondition failure (used by AWS_POSTCONDITION macro) */
-    AWS_ERROR_POSTCONDITION_FAILED = AWS_C_COMMON_ERROR_CODE_BEGIN + 9,
+    AWS_ERROR_POSTCONDITION_FAILED = AWS_C_COMMON_ERROR_CODE_BEGIN + 10,
 
     /* TODO: Add more common error codes as needed */
 
@@ -112,7 +113,7 @@ struct aws_error_info {
 
 struct aws_error_info_list {
     const struct aws_error_info *error_list;
-    uint16_t count;
+    unsigned int count;
 };
 
 /**

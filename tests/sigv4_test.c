@@ -174,6 +174,9 @@ static int s_test_sigv4_sign_request_with_body(struct aws_allocator *allocator, 
     aws_http_message_destroy(request);
     aws_credentials_release(credentials);
     
+    /* Clean up the IO library */
+    aws_io_library_clean_up();
+    
     return AWS_OP_SUCCESS;
 }
 
@@ -234,6 +237,9 @@ static int s_test_sigv4_sign_request_with_precalculated_hash(struct aws_allocato
 /* Test SigV4 signing with a tee stream */
 static int s_test_sigv4_sign_request_with_tee_stream(struct aws_allocator *allocator, void *ctx) {
     (void)ctx;
+    
+    /* Initialize the IO library */
+    aws_io_library_init(allocator);
     
     /* Create a body stream */
     struct aws_byte_cursor body_content = aws_byte_cursor_from_c_str("Test request body");

@@ -62,10 +62,12 @@ static const uint8_t s_hex_decoding_table[256] = {
 
 int aws_base64_compute_decoded_len(const struct aws_byte_cursor *encoded, size_t *decoded_len) {
     if (!encoded) {
-        return aws_raise_error(AWS_ERROR_INVALID_ARGUMENT);
+        aws_raise_error(AWS_ERROR_INVALID_ARGUMENT);
+        return AWS_OP_ERR;
     }
     if (!decoded_len) {
-        return aws_raise_error(AWS_ERROR_INVALID_ARGUMENT);
+        aws_raise_error(AWS_ERROR_INVALID_ARGUMENT);
+        return AWS_OP_ERR;
     }
 
     size_t len = encoded->len;
@@ -93,7 +95,8 @@ int aws_base64_compute_decoded_len(const struct aws_byte_cursor *encoded, size_t
 
 int aws_base64_compute_encoded_len(size_t data_len, size_t *encoded_len) {
     if (!encoded_len) {
-        return aws_raise_error(AWS_ERROR_INVALID_ARGUMENT);
+        aws_raise_error(AWS_ERROR_INVALID_ARGUMENT);
+        return AWS_OP_ERR;
     }
     *encoded_len = (data_len + 2) / 3 * 4;
     return AWS_OP_SUCCESS;
@@ -101,10 +104,12 @@ int aws_base64_compute_encoded_len(size_t data_len, size_t *encoded_len) {
 
 int aws_base64_encode(const struct aws_byte_cursor *to_encode, struct aws_byte_buf *dest) {
     if (!to_encode) {
-        return aws_raise_error(AWS_ERROR_INVALID_ARGUMENT);
+        aws_raise_error(AWS_ERROR_INVALID_ARGUMENT);
+        return AWS_OP_ERR;
     }
     if (!dest) {
-        return aws_raise_error(AWS_ERROR_INVALID_ARGUMENT);
+        aws_raise_error(AWS_ERROR_INVALID_ARGUMENT);
+        return AWS_OP_ERR;
     }
 
     size_t encoded_len;
@@ -145,10 +150,12 @@ int aws_base64_encode(const struct aws_byte_cursor *to_encode, struct aws_byte_b
 
 int aws_base64_decode(const struct aws_byte_cursor *to_decode, struct aws_byte_buf *dest) {
     if (!to_decode) {
-        return aws_raise_error(AWS_ERROR_INVALID_ARGUMENT);
+        aws_raise_error(AWS_ERROR_INVALID_ARGUMENT);
+        return AWS_OP_ERR;
     }
     if (!dest) {
-        return aws_raise_error(AWS_ERROR_INVALID_ARGUMENT);
+        aws_raise_error(AWS_ERROR_INVALID_ARGUMENT);
+        return AWS_OP_ERR;
     }
 
     size_t decoded_len;
@@ -194,10 +201,12 @@ int aws_base64_decode(const struct aws_byte_cursor *to_decode, struct aws_byte_b
 
 int aws_hex_compute_decoded_len(const struct aws_byte_cursor *encoded, size_t *decoded_len) {
     if (!encoded) {
-        return aws_raise_error(AWS_ERROR_INVALID_ARGUMENT);
+        aws_raise_error(AWS_ERROR_INVALID_ARGUMENT);
+        return AWS_OP_ERR;
     }
     if (!decoded_len) {
-        return aws_raise_error(AWS_ERROR_INVALID_ARGUMENT);
+        aws_raise_error(AWS_ERROR_INVALID_ARGUMENT);
+        return AWS_OP_ERR;
     }
 
     if (encoded->len % 2 != 0) {
@@ -211,7 +220,8 @@ int aws_hex_compute_decoded_len(const struct aws_byte_cursor *encoded, size_t *d
 
 int aws_hex_compute_encoded_len(size_t data_len, size_t *encoded_len) {
     if (!encoded_len) {
-        return aws_raise_error(AWS_ERROR_INVALID_ARGUMENT);
+        aws_raise_error(AWS_ERROR_INVALID_ARGUMENT);
+        return AWS_OP_ERR;
     }
     *encoded_len = data_len * 2;
     return AWS_OP_SUCCESS;
@@ -219,10 +229,12 @@ int aws_hex_compute_encoded_len(size_t data_len, size_t *encoded_len) {
 
 int aws_hex_encode(const struct aws_byte_cursor *to_encode, struct aws_byte_buf *dest) {
     if (!to_encode) {
-        return aws_raise_error(AWS_ERROR_INVALID_ARGUMENT);
+        aws_raise_error(AWS_ERROR_INVALID_ARGUMENT);
+        return AWS_OP_ERR;
     }
     if (!dest) {
-        return aws_raise_error(AWS_ERROR_INVALID_ARGUMENT);
+        aws_raise_error(AWS_ERROR_INVALID_ARGUMENT);
+        return AWS_OP_ERR;
     }
 
     size_t encoded_len;
@@ -246,7 +258,7 @@ int aws_hex_encode(const struct aws_byte_cursor *to_encode, struct aws_byte_buf 
 
     dest->len += encoded_len;
     return AWS_OP_SUCCESS;
-}
+}; // Added missing semicolon
 
 int aws_byte_buf_append_encoding_to_hex(struct aws_byte_buf *dest, const struct aws_byte_cursor *to_encode) {
     return aws_hex_encode(to_encode, dest);
@@ -254,10 +266,12 @@ int aws_byte_buf_append_encoding_to_hex(struct aws_byte_buf *dest, const struct 
 
 int aws_hex_decode(const struct aws_byte_cursor *to_decode, struct aws_byte_buf *dest) {
     if (!to_decode) {
-        return aws_raise_error(AWS_ERROR_INVALID_ARGUMENT);
+        aws_raise_error(AWS_ERROR_INVALID_ARGUMENT);
+        return AWS_OP_ERR;
     }
     if (!dest) {
-        return aws_raise_error(AWS_ERROR_INVALID_ARGUMENT);
+        aws_raise_error(AWS_ERROR_INVALID_ARGUMENT);
+        return AWS_OP_ERR;
     }
 
     size_t decoded_len;
