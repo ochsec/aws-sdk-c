@@ -9,7 +9,13 @@ add_library(aws-c-s3
 )
 
 # Link against the common library
-target_link_libraries(aws-c-s3 PUBLIC aws-c-common)
+target_link_libraries(aws-c-s3 PUBLIC
+    aws-c-common
+    aws-c-cal
+    aws-c-io
+    aws-c-auth
+    aws-sdkutils-lib # Verify this target name if build fails
+)
 
 # Set target properties (e.g., include directories)
 # The common library already sets up the include path via PUBLIC
