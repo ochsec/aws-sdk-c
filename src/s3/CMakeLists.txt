@@ -14,7 +14,7 @@ target_link_libraries(aws-c-s3 PUBLIC
     aws-c-cal
     aws-c-io
     aws-c-auth
-    aws-sdkutils-lib # Verify this target name if build fails
+    aws-c-sdkutils # Verify this target name if build fails
 )
 
 # Set target properties (e.g., include directories)

@@ -69,5 +69,5 @@ void aws_s3_list_buckets_result_destroy(struct aws_s3_list_buckets_result *resul
     }
     struct aws_allocator *allocator = result->allocator;
     aws_s3_list_buckets_result_clean_up(result);
-    aws_mem_release_via(allocator, result);
+    aws_mem_release(allocator, result);
 }

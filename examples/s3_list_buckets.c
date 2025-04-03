@@ -2,6 +2,8 @@
  * Copyright Christopher Ochsenreither. All Rights Reserved.
  * SPDX-License-Identifier: Apache-2.0.
  */
+#include <aws/common/date_time.h>
+#include <aws/s3/model/list_buckets_result.h>
 
 #include <aws/s3/s3_client.h>
 #include <aws/common/error.h>
@@ -30,7 +32,7 @@ int main(int argc, char *argv[]) {
     if (!client) {
         fprintf(stderr, "Failed to create S3 client: %s (%s)\n",
                 aws_error_str(aws_last_error()),
-                aws_error_debug_str());
+                aws_error_debug_str(aws_last_error()));
         return 1;
     }
     printf("S3 client created successfully.\n");
@@ -42,7 +44,7 @@ int main(int argc, char *argv[]) {
     if (!result) {
         fprintf(stderr, "aws_s3_list_buckets failed: %s (%s)\n",
                 aws_error_str(aws_last_error()),
-                aws_error_debug_str());
+                aws_error_debug_str(aws_last_error()));
         /* Expected failure for now as it's not implemented */
         printf("ListBuckets call failed as expected (not implemented yet).\n");
     } else {
@@ -57,7 +59,7 @@ int main(int argc, char *argv[]) {
             if (bucket_ptr && bucket_ptr->name) {
                  printf("- %s (Created: %lld)\n",
                         aws_string_c_str(bucket_ptr->name),
-                        (long long)aws_date_time_get_epoch_secs(&bucket_ptr->creation_date));
+                        (long long)aws_date_time_as_epoch_secs(&bucket_ptr->creation_date));
             }
         }
 

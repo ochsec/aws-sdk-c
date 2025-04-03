@@ -5,7 +5,7 @@ project(aws-sdk-c C)
 # Set C standard
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_C_EXTENSIONS OFF)
+set(CMAKE_C_EXTENSIONS ON)
 
 include(FetchContent)
 set(FETCHCONTENT_BASE_DIR ${CMAKE_BINARY_DIR}/_deps)
@@ -17,7 +17,7 @@ set(FETCHCONTENT_BASE_DIR ${CMAKE_BINARY_DIR}/_deps)
 FetchContent_Declare(
     aws-c-common
     GIT_REPOSITORY https://github.com/awslabs/aws-c-common.git
-    GIT_TAG v0.9.9 # Replace with the desired stable release tag
+    GIT_TAG v0.9.17 # Updated to a more recent stable release tag
     GIT_SHALLOW TRUE
     GIT_PROGRESS TRUE
 )

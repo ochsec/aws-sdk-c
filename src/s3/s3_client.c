@@ -3,6 +3,8 @@
  * SPDX-License-Identifier: Apache-2.0.
  */
 
+#include <aws/s3/model/list_buckets_result.h>
+
 #include <aws/s3/s3_client.h>
 #include <aws/common/allocator.h>
 #include <aws/common/error.h>
@@ -26,7 +28,7 @@ struct aws_s3_client *aws_s3_client_new(
         allocator = aws_default_allocator();
     }
 
-    struct aws_s3_client *client = aws_mem_calloc_via(allocator, 1, sizeof(struct aws_s3_client));
+    struct aws_s3_client *client = aws_mem_calloc(allocator, 1, sizeof(struct aws_s3_client));
     if (!client) {
         return NULL; /* OOM */
     }
@@ -58,7 +60,7 @@ void aws_s3_client_destroy(struct aws_s3_client *client) {
 
     /* TODO: Clean up HTTP client, credentials provider, etc. */
 
-    aws_mem_release_via(allocator, client);
+    aws_mem_release(allocator, client);
 }
 
 /* Proof-of-concept implementation for ListBuckets */
@@ -84,7 +86,7 @@ struct aws_s3_list_buckets_result *aws_s3_list_buckets(
     aws_raise_error(AWS_ERROR_UNKNOWN); /* Indicate not implemented */
 
     /* Allocate result structure even on error, caller might expect it */
-    struct aws_s3_list_buckets_result *result = aws_mem_calloc_via(allocator, 1, sizeof(struct aws_s3_list_buckets_result));
+    struct aws_s3_list_buckets_result *result = aws_mem_calloc(allocator, 1, sizeof(struct aws_s3_list_buckets_result));
      if (!result) {
          return NULL; /* OOM */
      }
