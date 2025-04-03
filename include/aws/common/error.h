@@ -19,6 +19,13 @@ AWS_EXTERN_C_BEGIN
 #define AWS_C_COMMON_ERROR_CODE_BEGIN 0
 #define AWS_C_COMMON_ERROR_CODE_END 1023
 
+/* Stride between error code ranges for different libraries */
+#define AWS_ERROR_ENUM_STRIDE 1024
+
+/* Macros to calculate the begin/end of an error code range for a package */
+#define AWS_ERROR_ENUM_BEGIN_RANGE(x) ((x)*AWS_ERROR_ENUM_STRIDE)
+#define AWS_ERROR_ENUM_END_RANGE(x) (((x) + 1) * AWS_ERROR_ENUM_STRIDE - 1)
+
 /**
  * @brief Common error codes used across the SDK.
  *
@@ -49,6 +56,9 @@ enum aws_common_error {
     AWS_ERROR_INVALID_BASE64_STR = AWS_C_COMMON_ERROR_CODE_BEGIN + 7,
     AWS_ERROR_INVALID_HEX_STR = AWS_C_COMMON_ERROR_CODE_BEGIN + 8,
     AWS_ERROR_INVALID_DATE_STR = AWS_C_COMMON_ERROR_CODE_BEGIN + 9,
+
+    /* Malformed input string (e.g., invalid URI) */
+    AWS_ERROR_MALFORMED_INPUT_STRING = AWS_C_COMMON_ERROR_CODE_BEGIN + 10,
 
     /* Postcondition failure (used by AWS_POSTCONDITION macro) */
     AWS_ERROR_POSTCONDITION_FAILED = AWS_C_COMMON_ERROR_CODE_BEGIN + 10,

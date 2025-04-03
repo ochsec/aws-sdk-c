@@ -8,6 +8,7 @@
 #include <aws/common/byte_buf.h> /* Needed for aws_byte_buf_* functions */
 #include <aws/common/logging.h>
 #include <aws/common/error.h>
+#include <aws/common/assert.h> /* For AWS_PRECONDITION/AWS_ASSERT */
 
 /* Define logging source for IO operations */
 #define AWS_LS_IO_GENERAL 0x1000 // Assuming this is defined elsewhere or should be moved

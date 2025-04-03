@@ -7,8 +7,16 @@
  */
 
 #include <aws/common/exports.h>
+#include <aws/common/common.h> /* For AWS_C_COMMON_PACKAGE_ID */
 #include <aws/common/allocator.h>
 #include <stdarg.h> /* For va_list */
+
+/* Stride between log subject ranges for different libraries */
+#define AWS_LOG_SUBJECT_STRIDE 1024
+
+/* Macros to calculate the begin/end of a log subject range for a package */
+#define AWS_LOG_SUBJECT_BEGIN_RANGE(x) ((x)*AWS_LOG_SUBJECT_STRIDE)
+#define AWS_LOG_SUBJECT_END_RANGE(x) (((x) + 1) * AWS_LOG_SUBJECT_STRIDE - 1)
 
 AWS_EXTERN_C_BEGIN
 
@@ -25,6 +33,21 @@ enum aws_log_level {
     AWS_LL_TRACE,
 
     AWS_LL_COUNT /* Sentinel value */
+};
+
+/** Log subjects (categories) */
+enum aws_log_subject {
+    AWS_LS_COMMON_GENERAL = AWS_LOG_SUBJECT_BEGIN_RANGE(AWS_C_COMMON_PACKAGE_ID),
+    AWS_LS_COMMON_TASK_SCHEDULER,
+    AWS_LS_COMMON_THREAD,
+    AWS_LS_COMMON_MEMTRACE,
+    AWS_LS_COMMON_XML_PARSER,
+    AWS_LS_COMMON_IO,
+    AWS_LS_COMMON_BUS,
+    AWS_LS_COMMON_TEST,
+    AWS_LS_COMMON_JSON_PARSER,
+    AWS_LS_COMMON_CBOR,
+    AWS_LS_COMMON_LAST = AWS_LOG_SUBJECT_END_RANGE(AWS_C_COMMON_PACKAGE_ID)
 };
 
 /**
@@ -75,12 +98,13 @@ AWS_COMMON_API
 void aws_log_v(enum aws_log_level level, const char *tag, const char *format, va_list args);
 
 /* Logging Macros */
-#define AWS_LOGF_FATAL(tag, format, ...) aws_log(AWS_LL_FATAL, tag, format, ##__VA_ARGS__)
-#define AWS_LOGF_ERROR(tag, format, ...) aws_log(AWS_LL_ERROR, tag, format, ##__VA_ARGS__)
-#define AWS_LOGF_WARN(tag, format, ...)  aws_log(AWS_LL_WARN,  tag, format, ##__VA_ARGS__)
-#define AWS_LOGF_INFO(tag, format, ...)  aws_log(AWS_LL_INFO,  tag, format, ##__VA_ARGS__)
-#define AWS_LOGF_DEBUG(tag, format, ...) aws_log(AWS_LL_DEBUG, tag, format, ##__VA_ARGS__)
-#define AWS_LOGF_TRACE(tag, format, ...) aws_log(AWS_LL_TRACE, tag, format, ##__VA_ARGS__)
+/* Note: The 'subject' parameter should be an enum aws_log_subject value */
+#define AWS_LOGF_FATAL(subject, format, ...) aws_log(AWS_LL_FATAL, subject, format, ##__VA_ARGS__)
+#define AWS_LOGF_ERROR(subject, format, ...) aws_log(AWS_LL_ERROR, subject, format, ##__VA_ARGS__)
+#define AWS_LOGF_WARN(subject, format, ...)  aws_log(AWS_LL_WARN,  subject, format, ##__VA_ARGS__)
+#define AWS_LOGF_INFO(subject, format, ...)  aws_log(AWS_LL_INFO,  subject, format, ##__VA_ARGS__)
+#define AWS_LOGF_DEBUG(subject, format, ...) aws_log(AWS_LL_DEBUG, subject, format, ##__VA_ARGS__)
+#define AWS_LOGF_TRACE(subject, format, ...) aws_log(AWS_LL_TRACE, subject, format, ##__VA_ARGS__)
 
 
 AWS_EXTERN_C_END

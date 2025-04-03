@@ -16,11 +16,19 @@ add_library(aws-c-common
     common/http.c
     common/http_client.c
     common/encoding.c # Added for hex/base64 encoding
+    common/uri.c      # Added for URI parsing
     # IO components
     io/io.c
     io/tee_input_stream.c
     # Auth components
     auth/sigv4.c
+    auth/credentials.c # Added for credentials handling
+    auth/auth.c        # Added for core auth types/functions
+    # CAL components (Cryptography Abstraction Layer)
+    cal/hash.c        # Added for hashing (SHA256, etc.)
+    cal/hmac.c        # Added for HMAC
+    # SDKUtils components
+    sdkutils/sdkutils.c # Added for SDK utilities
     # Add other core source files here
 )
 

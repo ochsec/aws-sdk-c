@@ -78,6 +78,15 @@ int aws_hex_compute_encoded_len(size_t data_len, size_t *encoded_len);
 AWS_COMMON_API
 int aws_base64_compute_encoded_len(size_t data_len, size_t *encoded_len);
 
+/**
+ * @brief Checks if a character is alphanumeric (a-z, A-Z, 0-9).
+ *
+ * @param c Character code (int).
+ * @return `true` if alphanumeric, `false` otherwise.
+ */
+AWS_COMMON_API
+bool aws_isalnum(int c);
+
 AWS_EXTERN_C_END
 
 #endif /* AWS_COMMON_ENCODING_H */

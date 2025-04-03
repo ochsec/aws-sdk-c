@@ -32,6 +32,13 @@ size_t aws_round_up_to_power_of_two(size_t size);
 
 /* TODO: Add more math functions as needed (e.g., safe addition/multiplication with overflow checks) */
 
+/**
+ * @brief Multiplies a * b. Returns true on success.
+ *        Returns false if overflow would occur. Result is stored in *result.
+ */
+AWS_COMMON_API
+bool aws_mul_size_checked(size_t a, size_t b, size_t *result);
+
 AWS_EXTERN_C_END
 
 #endif /* AWS_COMMON_MATH_H */

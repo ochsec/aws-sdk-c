@@ -26,6 +26,9 @@ AWS_EXTERN_C_BEGIN
 
 /* Add other IO errors here */
 
+/** Function pointer type for clock functions */
+typedef int(aws_io_clock_fn)(uint64_t *timestamp);
+
 /**
  * Call this function to initialize the aws-c-io library.
  * Needs to be called before using any other functions in the library.

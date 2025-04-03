@@ -24,7 +24,20 @@ AWS_EXTERN_C_BEGIN
 #define AWS_ASSERT(condition) assert(condition)
 #endif /* NDEBUG */
 
-
+/*
+ * Assertion that terminates the program if the condition is false.
+ * Calls aws_fatal_assert() function (which should be declared below).
+ */
+#define AWS_FATAL_ASSERT(cond) \
+    do { \
+        if (!(cond)) { \
+            aws_fatal_assert(#cond, __FILE__, __LINE__); \
+        } \
+    } while (0)
+   
+   /* Function called by AWS_FATAL_ASSERT macro on failure */
+   AWS_COMMON_API void aws_fatal_assert(const char *cond_str, const char *file, int line);
+   
 AWS_EXTERN_C_END
 
 #endif /* AWS_COMMON_ASSERT_H */

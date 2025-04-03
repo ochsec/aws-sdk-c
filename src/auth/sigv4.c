@@ -33,6 +33,7 @@
 
 #include <stdio.h> // For snprintf
 #include <stdlib.h> // For qsort
+#include <time.h>   // For gmtime_r, strftime
 
 // --- Internal Helper Functions ---
 
@@ -63,30 +64,42 @@ static int s_aws_date_time_to_iso8601_basic_str(
     const struct aws_date_time *dt,
     char *buffer,
     size_t buffer_size) {
+
     if (buffer_size == 0) {
-        return AWS_OP_SUCCESS; // Nothing to do
+        return AWS_OP_SUCCESS;
     }
+    buffer[0] = '\0'; // Ensure null termination on error or small buffer
+
     if (buffer_size < 16) { // Needs space for YYYYMMDDTHHMMSSZ + null terminator
         aws_raise_error(AWS_ERROR_SHORT_BUFFER);
-        buffer[0] = '\0';
         return AWS_OP_ERR;
     }
 
-    int ret = snprintf(
-        buffer,
-        buffer_size,
-        "%04d%02d%02dT%02d%02d%02dZ",
-        aws_date_time_get_year(dt),
-        aws_date_time_get_month(dt),
-        aws_date_time_get_day(dt),
-        aws_date_time_get_hour(dt),
-        aws_date_time_get_minute(dt),
-        aws_date_time_get_second(dt));
+    time_t epoch_secs = aws_date_time_get_epoch_secs(dt);
+    struct tm tm_utc;
 
-    if (ret < 0 || (size_t)ret >= buffer_size) {
-        // Encoding error or buffer too small (shouldn't happen with size check)
-        aws_raise_error(AWS_ERROR_INVALID_DATE_STR); // Or a more specific error
-        buffer[0] = '\0'; // Ensure null termination on error
+    // Use gmtime_r for thread-safety if available, otherwise gmtime
+#ifdef __unix__
+    if (gmtime_r(&epoch_secs, &tm_utc) == NULL) {
+        aws_raise_error(AWS_ERROR_INVALID_DATE_STR); // Indicate error converting time
+        return AWS_OP_ERR;
+    }
+#else
+    // Fallback for non-unix or where gmtime_r is not guaranteed
+    struct tm *tm_ptr = gmtime(&epoch_secs);
+    if (tm_ptr == NULL) {
+        return aws_raise_error(AWS_ERROR_INVALID_DATE_STR);
+    }
+    tm_utc = *tm_ptr; // Copy the result
+#endif
+
+    // Format using strftime
+    size_t written = strftime(buffer, buffer_size, "%Y%m%dT%H%M%SZ", &tm_utc);
+
+    if (written == 0) {
+        // strftime returns 0 if buffer is too small or on other errors
+        // We already checked buffer size, so likely another error
+        aws_raise_error(AWS_ERROR_INVALID_DATE_STR);
         return AWS_OP_ERR;
     }
 
@@ -153,7 +166,7 @@ static int s_aws_sigv4_normalize_uri_path(
             }
 
             // Use aws_uri_encode_path_segment for SigV4-compatible encoding
-            if (aws_uri_encode_path_segment(&segment, &encoded_segment_buf)) {
+            if (aws_byte_buf_append_encoding_uri_path(&encoded_segment_buf, &segment)) {
                 aws_byte_buf_clean_up(&encoded_segment_buf);
                 result = AWS_OP_ERR;
                 goto cleanup_segments;
@@ -255,27 +268,42 @@ static int s_aws_date_time_to_date_stamp_str(
     const struct aws_date_time *dt,
     char *buffer,
     size_t buffer_size) {
-     if (buffer_size == 0) {
-        return AWS_OP_SUCCESS; // Nothing to do
+
+    if (buffer_size == 0) {
+        return AWS_OP_SUCCESS;
     }
+    buffer[0] = '\0'; // Ensure null termination on error or small buffer
+
     if (buffer_size < 9) { // Needs space for YYYYMMDD + null terminator
         aws_raise_error(AWS_ERROR_SHORT_BUFFER);
-        buffer[0] = '\0';
         return AWS_OP_ERR;
     }
 
-    int ret = snprintf(
-        buffer,
-        buffer_size,
-        "%04d%02d%02d",
-        aws_date_time_get_year(dt),
-        aws_date_time_get_month(dt),
-        aws_date_time_get_day(dt));
+    time_t epoch_secs = aws_date_time_get_epoch_secs(dt);
+    struct tm tm_utc;
 
-     if (ret < 0 || (size_t)ret >= buffer_size) {
-        // Encoding error or buffer too small (shouldn't happen with size check)
-        aws_raise_error(AWS_ERROR_INVALID_DATE_STR); // Or a more specific error
-        buffer[0] = '\0'; // Ensure null termination on error
+    // Use gmtime_r for thread-safety if available, otherwise gmtime
+#ifdef __unix__
+    if (gmtime_r(&epoch_secs, &tm_utc) == NULL) {
+        aws_raise_error(AWS_ERROR_INVALID_DATE_STR); // Indicate error converting time
+        return AWS_OP_ERR;
+    }
+#else
+    // Fallback for non-unix or where gmtime_r is not guaranteed
+    struct tm *tm_ptr = gmtime(&epoch_secs);
+    if (tm_ptr == NULL) {
+        return aws_raise_error(AWS_ERROR_INVALID_DATE_STR);
+    }
+    tm_utc = *tm_ptr; // Copy the result
+#endif
+
+    // Format using strftime
+    size_t written = strftime(buffer, buffer_size, "%Y%m%d", &tm_utc);
+
+    if (written == 0) {
+        // strftime returns 0 if buffer is too small or on other errors
+        // We already checked buffer size, so likely another error
+        aws_raise_error(AWS_ERROR_INVALID_DATE_STR);
         return AWS_OP_ERR;
     }
 
