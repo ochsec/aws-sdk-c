@@ -55,6 +55,22 @@ FetchContent_Declare(
 )
 # --- End AWS C Library Dependencies ---
 
+FetchContent_Declare(
+    aws-c-compression
+    GIT_REPOSITORY https://github.com/awslabs/aws-c-compression.git
+    GIT_TAG v0.3.1  # Latest stable version as of April 2025
+    GIT_SHALLOW TRUE
+    GIT_PROGRESS TRUE
+)
+
+FetchContent_Declare(
+    aws-c-http
+    GIT_REPOSITORY https://github.com/awslabs/aws-c-http.git
+    GIT_TAG v0.9.6  # Latest stable version as of April 2025
+    GIT_SHALLOW TRUE
+    GIT_PROGRESS TRUE
+)
+
 # Make aws-c-common available first, as others depend on its CMake modules
 FetchContent_MakeAvailable(aws-c-common)
 list(PREPEND CMAKE_MODULE_PATH "${aws-c-common_SOURCE_DIR}/cmake") # Add its cmake dir to the path
@@ -66,6 +82,8 @@ FetchContent_MakeAvailable(
     aws-c-io
     aws-c-auth
     aws-sdkutils
+    aws-c-compression
+    aws-c-http
 )
 
 # Options
@@ -82,7 +100,7 @@ add_subdirectory(src/s3)
 
 if(ENABLE_TESTING)
     enable_testing()
-    # add_subdirectory(tests) # TODO: Add tests later
+    add_subdirectory(tests) # Uncommented to enable tests
 endif()
 
 # Add examples subdirectory
