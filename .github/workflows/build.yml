@@ -42,6 +42,7 @@ jobs:
         }
         
         # Install AWS CRT libraries in dependency order
+        install_aws_lib aws-checksums # Added dependency for aws-c-common
         install_aws_lib aws-c-common
         install_aws_lib aws-c-cal
         install_aws_lib aws-c-sdkutils
@@ -108,6 +109,7 @@ jobs:
         export s2n_DIR=/usr/lib/cmake/s2n
         
         # Set up environment variables for all AWS CRT libraries
+        export aws_checksums_DIR=/usr/lib/cmake/aws-checksums # Added dependency
         export aws_c_common_DIR=/usr/lib/cmake/aws-c-common
         export aws_c_cal_DIR=/usr/lib/cmake/aws-c-cal
         export aws_c_sdkutils_DIR=/usr/lib/cmake/aws-c-sdkutils
@@ -130,6 +132,7 @@ jobs:
           cmake \
             -DCMAKE_PREFIX_PATH=/usr \
             -DUSE_S2N=OFF \
+            -Daws-checksums_DIR=/usr/lib/cmake/aws-checksums \ # Added dependency
             -Daws-c-common_DIR=/usr/lib/cmake/aws-c-common \
             -Daws-c-cal_DIR=/usr/lib/cmake/aws-c-cal \
             -Daws-c-sdkutils_DIR=/usr/lib/cmake/aws-c-sdkutils \
