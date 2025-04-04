@@ -1,5 +1,6 @@
 # Build artifacts
 build/
+build-ci/
 *.o
 *.a
 *.so

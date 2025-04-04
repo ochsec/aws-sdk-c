@@ -8,7 +8,7 @@
 
 #include <aws/common/common.h>
 #include <aws/common/byte_buf.h>
-#include <aws/io/input_stream.h>
+#include <aws/io/stream.h> /* Use the correct header from aws-c-io */
 
 /* Define AWS_HTTP_API if not already defined */
 #ifndef AWS_HTTP_API

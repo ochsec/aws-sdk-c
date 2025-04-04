@@ -1,5 +1,12 @@
 # Copyright Christopher Ochsenreither. All Rights Reserved.
 # SPDX-License-Identifier: Apache-2.0.
+# Find required AWS C library packages
+find_package(aws-c-common REQUIRED)
+find_package(aws-c-cal REQUIRED)
+find_package(aws-c-io REQUIRED)
+find_package(aws-c-auth REQUIRED)
+find_package(aws-c-sdkutils REQUIRED)
+
 
 # Define the S3 library target
 add_library(aws-c-s3
@@ -10,11 +17,11 @@ add_library(aws-c-s3
 
 # Link against the common library
 target_link_libraries(aws-c-s3 PUBLIC
-    aws-c-common
-    aws-c-cal
-    aws-c-io
-    aws-c-auth
-    aws-c-sdkutils # Verify this target name if build fails
+    AWS::aws-c-common
+    AWS::aws-c-cal
+    AWS::aws-c-io
+    AWS::aws-c-auth
+    AWS::aws-c-sdkutils
 )
 
 # Set target properties (e.g., include directories)

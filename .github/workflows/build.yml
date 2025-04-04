@@ -30,19 +30,20 @@ jobs:
         # Function to install AWS CRT libraries
         install_aws_lib() {
           local repo=$1
+          local cmake_args=$2
           echo "Installing $repo..."
           git clone https://github.com/awslabs/$repo.git
           cd $repo
           mkdir build
           cd build
-          cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+          cmake -DCMAKE_INSTALL_PREFIX=/usr $cmake_args ..
           make
           sudo make install
           cd ../..
         }
         
         # Install AWS CRT libraries in dependency order
-        install_aws_lib aws-checksums # Added dependency for aws-c-common
+        install_aws_lib aws-checksums "-DBUILD_TESTING=OFF" # Added dependency for aws-c-common, disable tests
         install_aws_lib aws-c-common
         install_aws_lib aws-c-cal
         install_aws_lib aws-c-sdkutils
