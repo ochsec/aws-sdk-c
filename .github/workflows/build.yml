@@ -27,26 +27,31 @@ jobs:
         sudo make install
         cd ../..
         
-        # Install aws-c-common (required by aws-c-cal)
-        echo "Installing aws-c-common..."
-        git clone https://github.com/awslabs/aws-c-common.git
-        cd aws-c-common
-        mkdir build
-        cd build
-        cmake -DCMAKE_INSTALL_PREFIX=/usr ..
-        make
-        sudo make install
-        cd ../..
+        # Function to install AWS CRT libraries
+        install_aws_lib() {
+          local repo=$1
+          echo "Installing $repo..."
+          git clone https://github.com/awslabs/$repo.git
+          cd $repo
+          mkdir build
+          cd build
+          cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+          make
+          sudo make install
+          cd ../..
+        }
         
-        # Install aws-c-cal (required by aws-c-io)
-        echo "Installing aws-c-cal..."
-        git clone https://github.com/awslabs/aws-c-cal.git
-        cd aws-c-cal
-        mkdir build
-        cd build
-        cmake -DCMAKE_INSTALL_PREFIX=/usr ..
-        make
-        sudo make install
+        # Install AWS CRT libraries in dependency order
+        install_aws_lib aws-c-common
+        install_aws_lib aws-c-cal
+        install_aws_lib aws-c-sdkutils
+        install_aws_lib aws-c-compression
+        install_aws_lib aws-c-io
+        install_aws_lib aws-c-http
+        install_aws_lib aws-c-auth
+        install_aws_lib aws-c-mqtt
+        install_aws_lib aws-c-event-stream
+        install_aws_lib aws-c-s3
 
     # Checkout the repository code
     - name: Checkout repository
@@ -101,8 +106,18 @@ jobs:
       run: |
         # Set up environment variables for finding dependencies
         export s2n_DIR=/usr/lib/cmake/s2n
+        
+        # Set up environment variables for all AWS CRT libraries
         export aws_c_common_DIR=/usr/lib/cmake/aws-c-common
         export aws_c_cal_DIR=/usr/lib/cmake/aws-c-cal
+        export aws_c_sdkutils_DIR=/usr/lib/cmake/aws-c-sdkutils
+        export aws_c_compression_DIR=/usr/lib/cmake/aws-c-compression
+        export aws_c_io_DIR=/usr/lib/cmake/aws-c-io
+        export aws_c_http_DIR=/usr/lib/cmake/aws-c-http
+        export aws_c_auth_DIR=/usr/lib/cmake/aws-c-auth
+        export aws_c_mqtt_DIR=/usr/lib/cmake/aws-c-mqtt
+        export aws_c_event_stream_DIR=/usr/lib/cmake/aws-c-event-stream
+        export aws_c_s3_DIR=/usr/lib/cmake/aws-c-s3
         
         echo "Configuring with all dependencies..."
         # Configure with updated paths and options
@@ -117,6 +132,14 @@ jobs:
             -DUSE_S2N=OFF \
             -Daws-c-common_DIR=/usr/lib/cmake/aws-c-common \
             -Daws-c-cal_DIR=/usr/lib/cmake/aws-c-cal \
+            -Daws-c-sdkutils_DIR=/usr/lib/cmake/aws-c-sdkutils \
+            -Daws-c-compression_DIR=/usr/lib/cmake/aws-c-compression \
+            -Daws-c-io_DIR=/usr/lib/cmake/aws-c-io \
+            -Daws-c-http_DIR=/usr/lib/cmake/aws-c-http \
+            -Daws-c-auth_DIR=/usr/lib/cmake/aws-c-auth \
+            -Daws-c-mqtt_DIR=/usr/lib/cmake/aws-c-mqtt \
+            -Daws-c-event-stream_DIR=/usr/lib/cmake/aws-c-event-stream \
+            -Daws-c-s3_DIR=/usr/lib/cmake/aws-c-s3 \
             ..
         fi
       working-directory: ${{ github.workspace }}/build
