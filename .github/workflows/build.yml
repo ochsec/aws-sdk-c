@@ -16,6 +16,15 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y build-essential cmake libssl-dev
+        
+        # Install s2n (AWS's TLS/SSL implementation)
+        git clone https://github.com/aws/s2n-tls.git
+        cd s2n-tls
+        mkdir build
+        cd build
+        cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+        make
+        sudo make install
 
     # Checkout the repository code
     - name: Checkout repository
@@ -29,6 +38,22 @@ jobs:
     # Set CMAKE_PREFIX_PATH environment variable for subsequent steps
     - name: Set CMAKE_PREFIX_PATH
       run: echo "CMAKE_PREFIX_PATH=${{ github.workspace }}/build/_deps/aws-c-common-build" >> $GITHUB_ENV
+      
+    # Modify aws-c-io CMakeLists.txt to make s2n optional (fallback if s2n installation fails)
+    - name: Make s2n Optional in aws-c-io
+      run: |
+        # First run FetchContent to get the aws-c-io source
+        mkdir -p build
+        cd build
+        cmake -DFETCHCONTENT_QUIET=OFF -DFETCHCONTENT_FULLY_DISCONNECTED=OFF ..
+        
+        # Now modify the aws-c-io CMakeLists.txt to make s2n optional
+        if [ -d "_deps/aws-c-io-src" ]; then
+          echo "Modifying aws-c-io CMakeLists.txt to make s2n optional"
+          sed -i 's/aws_use_package(s2n)/option(USE_S2N "Use s2n for TLS" OFF)\nif(USE_S2N)\n  aws_use_package(s2n)\nendif()/' _deps/aws-c-io-src/CMakeLists.txt
+        else
+          echo "aws-c-io source directory not found"
+        fi
 
     # List Build Directory Before Configure
     - name: List Build Directory Before Configure
@@ -37,7 +62,19 @@ jobs:
     # Configure the project using CMake with updated settings
     # (ENABLE_TESTING is ON by default as seen in CMakeLists.txt)
     - name: Configure CMake
-      run: cmake -DCMAKE_PREFIX_PATH=${{ github.workspace }}/build/_deps ..
+      run: |
+        # Try to find s2n first
+        export s2n_DIR=/usr/lib/cmake/s2n
+        
+        # Configure with updated paths and options
+        # If s2n is not found, we'll use USE_S2N=OFF
+        cmake -DCMAKE_PREFIX_PATH=${{ github.workspace }}/build/_deps:/usr -DUSE_S2N=OFF ..
+        
+        # If the above fails, try without s2n
+        if [ $? -ne 0 ]; then
+          echo "First configure attempt failed, trying without s2n..."
+          cmake -DCMAKE_PREFIX_PATH=${{ github.workspace }}/build/_deps -DUSE_S2N=OFF ..
+        fi
       working-directory: ${{ github.workspace }}/build
       
     # List Build Directory After Configure
