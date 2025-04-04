@@ -21,18 +21,14 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
-    # Fetch aws-c-common dependency
-    - name: Fetch aws-c-common
-      run: |
-        git clone https://github.com/awslabs/aws-c-common.git
-        mkdir -p build/_deps/aws-c-common-src
-        cp -r aws-c-common/* build/_deps/aws-c-common-src/
-
     # Configure the project using CMake with default settings
     # (ENABLE_TESTING is ON by default as seen in CMakeLists.txt)
+    # Set CMAKE_PREFIX_PATH to help find FetchContent dependencies
     - name: Configure CMake
       run: cmake ..
       working-directory: ./build
+      env:
+        CMAKE_PREFIX_PATH: ${{ github.workspace }}/build/_deps/aws-c-common-build
 
     # Build the SDK
     - name: Build SDK
