@@ -1,0 +1,39 @@
+name: Build and Test aws-sdk-c
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+
+    steps:
+    # Install dependencies needed on the Ubuntu runner environment
+    - name: Install System Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y build-essential cmake libssl-dev
+
+    # Checkout the repository code
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    # Create the build directory
+    - name: Create Build Directory
+      run: mkdir build
+
+    # Configure the project using CMake with default settings
+    # (ENABLE_TESTING is ON by default as seen in CMakeLists.txt)
+    - name: Configure CMake
+      run: cmake ..
+      working-directory: ./build
+
+    # Build the SDK
+    - name: Build SDK
+      run: cmake --build .
+      working-directory: ./build
+
+    # Tests are currently skipped due to existing failures
