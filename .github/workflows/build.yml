@@ -28,10 +28,6 @@ jobs:
         mkdir -p build/_deps/aws-c-common-src
         cp -r aws-c-common/* build/_deps/aws-c-common-src/
 
-    # Create the build directory
-    - name: Create Build Directory
-      run: mkdir build
-
     # Configure the project using CMake with default settings
     # (ENABLE_TESTING is ON by default as seen in CMakeLists.txt)
     - name: Configure CMake
