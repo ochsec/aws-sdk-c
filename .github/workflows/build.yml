@@ -21,6 +21,13 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
 
+    # Fetch aws-c-common dependency
+    - name: Fetch aws-c-common
+      run: |
+        git clone https://github.com/awslabs/aws-c-common.git
+        mkdir -p build/_deps/aws-c-common-src
+        cp -r aws-c-common/* build/_deps/aws-c-common-src/
+
     # Create the build directory
     - name: Create Build Directory
       run: mkdir build
