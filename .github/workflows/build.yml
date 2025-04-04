@@ -26,13 +26,13 @@ jobs:
     # Set CMAKE_PREFIX_PATH to help find FetchContent dependencies
     - name: Configure CMake
       run: cmake ..
-      working-directory: ./build
+      working-directory: ${{ github.workspace }}/build
       env:
         CMAKE_PREFIX_PATH: ${{ github.workspace }}/build/_deps/aws-c-common-build
 
     # Build the SDK
     - name: Build SDK
       run: cmake --build .
-      working-directory: ./build
+      working-directory: ${{ github.workspace }}/build
 
     # Tests are currently skipped due to existing failures
