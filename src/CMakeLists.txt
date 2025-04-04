@@ -4,9 +4,29 @@
 # This file can be used to define core SDK libraries or add further subdirectories.
 # Service-specific libraries (like S3) are defined in their respective subdirectories.
 
-# Core SDK library definitions would go here if needed.
-# Linking against fetched dependencies (aws-c-common, aws-c-cal, etc.)
-# should happen within the specific library targets (e.g., in src/s3/CMakeLists.txt).
+# Define the core SDK library
+add_library(aws-sdk-c-core
+    # Add core source files here
+    # For now, we'll create a placeholder file
+    ${CMAKE_CURRENT_SOURCE_DIR}/core_placeholder.c
+)
+
+# Link against the AWS C dependencies
+target_link_libraries(aws-sdk-c-core PUBLIC
+    aws-c-common
+    aws-c-cal
+    aws-c-auth
+    aws-c-io
+    aws-c-http
+    aws-c-compression
+    aws-sdkutils
+)
+
+# Set include directories
+target_include_directories(aws-sdk-c-core PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+)
 
 # Installation rules for actual SDK libraries and headers would go here or in subdirectories.
 # The headers for aws-c-* dependencies are typically installed by those libraries themselves.

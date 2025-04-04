@@ -30,11 +30,19 @@ jobs:
     - name: Set CMAKE_PREFIX_PATH
       run: echo "CMAKE_PREFIX_PATH=${{ github.workspace }}/build/_deps/aws-c-common-build" >> $GITHUB_ENV
 
-    # Configure the project using CMake with default settings
+    # List Build Directory Before Configure
+    - name: List Build Directory Before Configure
+      run: ls -la ${{ github.workspace }}/build
+      
+    # Configure the project using CMake with updated settings
     # (ENABLE_TESTING is ON by default as seen in CMakeLists.txt)
     - name: Configure CMake
-      run: cmake ..
+      run: cmake -DCMAKE_PREFIX_PATH=${{ github.workspace }}/build/_deps ..
       working-directory: ${{ github.workspace }}/build
+      
+    # List Build Directory After Configure
+    - name: List Build Directory After Configure
+      run: ls -la ${{ github.workspace }}/build
 
     # Build the SDK
     - name: Build SDK
