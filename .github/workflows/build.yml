@@ -25,6 +25,28 @@ jobs:
         cmake -DCMAKE_INSTALL_PREFIX=/usr ..
         make
         sudo make install
+        cd ../..
+        
+        # Install aws-c-common (required by aws-c-cal)
+        echo "Installing aws-c-common..."
+        git clone https://github.com/awslabs/aws-c-common.git
+        cd aws-c-common
+        mkdir build
+        cd build
+        cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+        make
+        sudo make install
+        cd ../..
+        
+        # Install aws-c-cal (required by aws-c-io)
+        echo "Installing aws-c-cal..."
+        git clone https://github.com/awslabs/aws-c-cal.git
+        cd aws-c-cal
+        mkdir build
+        cd build
+        cmake -DCMAKE_INSTALL_PREFIX=/usr ..
+        make
+        sudo make install
 
     # Checkout the repository code
     - name: Checkout repository
@@ -47,10 +69,24 @@ jobs:
         cd build
         cmake -DFETCHCONTENT_QUIET=OFF -DFETCHCONTENT_FULLY_DISCONNECTED=OFF ..
         
+        # Debug: Check if aws-c-cal is present
+        echo "Checking for aws-c-cal in _deps directory:"
+        ls -la _deps/ || echo "No _deps directory found"
+        
+        # Debug: Examine aws-c-io CMakeLists.txt before modification
+        if [ -f "_deps/aws-c-io-src/CMakeLists.txt" ]; then
+          echo "Examining aws-c-io CMakeLists.txt before modification:"
+          grep -n "aws_use_package" _deps/aws-c-io-src/CMakeLists.txt
+        fi
+        
         # Now modify the aws-c-io CMakeLists.txt to make s2n optional
         if [ -d "_deps/aws-c-io-src" ]; then
           echo "Modifying aws-c-io CMakeLists.txt to make s2n optional"
           sed -i 's/aws_use_package(s2n)/option(USE_S2N "Use s2n for TLS" OFF)\nif(USE_S2N)\n  aws_use_package(s2n)\nendif()/' _deps/aws-c-io-src/CMakeLists.txt
+          
+          # Also ensure aws-c-cal is properly handled
+          echo "Checking if aws-c-cal is referenced in CMakeLists.txt:"
+          grep -n "aws-c-cal" _deps/aws-c-io-src/CMakeLists.txt || echo "No direct reference to aws-c-cal found"
         else
           echo "aws-c-io source directory not found"
         fi
@@ -63,17 +99,25 @@ jobs:
     # (ENABLE_TESTING is ON by default as seen in CMakeLists.txt)
     - name: Configure CMake
       run: |
-        # Try to find s2n first
+        # Set up environment variables for finding dependencies
         export s2n_DIR=/usr/lib/cmake/s2n
+        export aws_c_common_DIR=/usr/lib/cmake/aws-c-common
+        export aws_c_cal_DIR=/usr/lib/cmake/aws-c-cal
         
+        echo "Configuring with all dependencies..."
         # Configure with updated paths and options
-        # If s2n is not found, we'll use USE_S2N=OFF
-        cmake -DCMAKE_PREFIX_PATH=${{ github.workspace }}/build/_deps:/usr -DUSE_S2N=OFF ..
+        # Use USE_S2N=OFF to disable s2n dependency
+        cmake -DCMAKE_PREFIX_PATH=/usr -DUSE_S2N=OFF ..
         
-        # If the above fails, try without s2n
+        # If the above fails, try with more explicit paths
         if [ $? -ne 0 ]; then
-          echo "First configure attempt failed, trying without s2n..."
-          cmake -DCMAKE_PREFIX_PATH=${{ github.workspace }}/build/_deps -DUSE_S2N=OFF ..
+          echo "First configure attempt failed, trying with explicit paths..."
+          cmake \
+            -DCMAKE_PREFIX_PATH=/usr \
+            -DUSE_S2N=OFF \
+            -Daws-c-common_DIR=/usr/lib/cmake/aws-c-common \
+            -Daws-c-cal_DIR=/usr/lib/cmake/aws-c-cal \
+            ..
         fi
       working-directory: ${{ github.workspace }}/build
       
