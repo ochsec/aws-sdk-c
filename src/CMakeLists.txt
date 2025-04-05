@@ -3,23 +3,33 @@
 
 # This file can be used to define core SDK libraries or add further subdirectories.
 # Service-specific libraries (like S3) are defined in their respective subdirectories.
+# Find required AWS C library packages
+find_package(aws-c-common REQUIRED)
+find_package(aws-c-cal REQUIRED)
+find_package(aws-c-auth REQUIRED)
+find_package(aws-c-io REQUIRED)
+find_package(aws-c-http REQUIRED)
+find_package(aws-c-compression REQUIRED)
+find_package(aws-c-sdkutils REQUIRED)
+
 
 # Define the core SDK library
 add_library(aws-sdk-c-core
     # Add core source files here
     # For now, we'll create a placeholder file
     ${CMAKE_CURRENT_SOURCE_DIR}/core_placeholder.c
+    # ${CMAKE_CURRENT_SOURCE_DIR}/io/tee_input_stream.c # Remove incompatible source
 )
 
 # Link against the AWS C dependencies
 target_link_libraries(aws-sdk-c-core PUBLIC
-    aws-c-common
-    aws-c-cal
-    aws-c-auth
-    aws-c-io
-    aws-c-http
-    aws-c-compression
-    aws-sdkutils
+    AWS::aws-c-common
+    AWS::aws-c-cal
+    AWS::aws-c-auth
+    AWS::aws-c-io
+    AWS::aws-c-http
+    AWS::aws-c-compression
+    AWS::aws-c-sdkutils
 )
 
 # Set include directories
