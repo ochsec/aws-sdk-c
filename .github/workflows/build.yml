@@ -12,48 +12,11 @@ jobs:
 
     steps:
     # Install dependencies needed on the Ubuntu runner environment
-    - name: Install System Dependencies
+    # Install essential build tools
+    - name: Install Build Tools
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential cmake libssl-dev
-        
-        # Install s2n (AWS's TLS/SSL implementation)
-        git clone https://github.com/aws/s2n-tls.git
-        cd s2n-tls
-        mkdir build
-        cd build
-        cmake -DCMAKE_INSTALL_PREFIX=/usr ..
-        make
-        sudo make install
-        cd ../..
-        
-        # Function to install AWS CRT libraries
-        install_aws_lib() {
-          local repo=$1
-          local cmake_args=$2
-          echo "Installing $repo..."
-          git clone https://github.com/awslabs/$repo.git
-          cd $repo
-          mkdir build
-          cd build
-          cmake -DCMAKE_INSTALL_PREFIX=/usr $cmake_args ..
-          make
-          sudo make install
-          cd ../..
-        }
-        
-        # Install AWS CRT libraries in dependency order
-        install_aws_lib aws-checksums "-DBUILD_TESTING=OFF" # Added dependency for aws-c-common, disable tests
-        install_aws_lib aws-c-common
-        install_aws_lib aws-c-cal
-        install_aws_lib aws-c-sdkutils
-        install_aws_lib aws-c-compression
-        install_aws_lib aws-c-io
-        install_aws_lib aws-c-http
-        install_aws_lib aws-c-auth
-        install_aws_lib aws-c-mqtt
-        install_aws_lib aws-c-event-stream
-        install_aws_lib aws-c-s3
+        sudo apt-get install -y build-essential cmake
 
     # Checkout the repository code
     - name: Checkout repository
@@ -64,39 +27,6 @@ jobs:
         mkdir build
         ls -la
 
-    # Set CMAKE_PREFIX_PATH environment variable for subsequent steps
-    - name: Set CMAKE_PREFIX_PATH
-      run: echo "CMAKE_PREFIX_PATH=${{ github.workspace }}/build/_deps/aws-c-common-build" >> $GITHUB_ENV
-      
-    # Modify aws-c-io CMakeLists.txt to make s2n optional (fallback if s2n installation fails)
-    - name: Make s2n Optional in aws-c-io
-      run: |
-        # First run FetchContent to get the aws-c-io source
-        mkdir -p build
-        cd build
-        cmake -DFETCHCONTENT_QUIET=OFF -DFETCHCONTENT_FULLY_DISCONNECTED=OFF ..
-        
-        # Debug: Check if aws-c-cal is present
-        echo "Checking for aws-c-cal in _deps directory:"
-        ls -la _deps/ || echo "No _deps directory found"
-        
-        # Debug: Examine aws-c-io CMakeLists.txt before modification
-        if [ -f "_deps/aws-c-io-src/CMakeLists.txt" ]; then
-          echo "Examining aws-c-io CMakeLists.txt before modification:"
-          grep -n "aws_use_package" _deps/aws-c-io-src/CMakeLists.txt
-        fi
-        
-        # Now modify the aws-c-io CMakeLists.txt to make s2n optional
-        if [ -d "_deps/aws-c-io-src" ]; then
-          echo "Modifying aws-c-io CMakeLists.txt to make s2n optional"
-          sed -i 's/aws_use_package(s2n)/option(USE_S2N "Use s2n for TLS" OFF)\nif(USE_S2N)\n  aws_use_package(s2n)\nendif()/' _deps/aws-c-io-src/CMakeLists.txt
-          
-          # Also ensure aws-c-cal is properly handled
-          echo "Checking if aws-c-cal is referenced in CMakeLists.txt:"
-          grep -n "aws-c-cal" _deps/aws-c-io-src/CMakeLists.txt || echo "No direct reference to aws-c-cal found"
-        else
-          echo "aws-c-io source directory not found"
-        fi
 
     # List Build Directory Before Configure
     - name: List Build Directory Before Configure
@@ -104,48 +34,9 @@ jobs:
       
     # Configure the project using CMake with updated settings
     # (ENABLE_TESTING is ON by default as seen in CMakeLists.txt)
+    # Configure the project using CMake. Dependencies are handled by FetchContent.
     - name: Configure CMake
-      run: |
-        # Set up environment variables for finding dependencies
-        export s2n_DIR=/usr/lib/cmake/s2n
-        
-        # Set up environment variables for all AWS CRT libraries
-        export aws_checksums_DIR=/usr/lib/cmake/aws-checksums # Added dependency
-        export aws_c_common_DIR=/usr/lib/cmake/aws-c-common
-        export aws_c_cal_DIR=/usr/lib/cmake/aws-c-cal
-        export aws_c_sdkutils_DIR=/usr/lib/cmake/aws-c-sdkutils
-        export aws_c_compression_DIR=/usr/lib/cmake/aws-c-compression
-        export aws_c_io_DIR=/usr/lib/cmake/aws-c-io
-        export aws_c_http_DIR=/usr/lib/cmake/aws-c-http
-        export aws_c_auth_DIR=/usr/lib/cmake/aws-c-auth
-        export aws_c_mqtt_DIR=/usr/lib/cmake/aws-c-mqtt
-        export aws_c_event_stream_DIR=/usr/lib/cmake/aws-c-event-stream
-        export aws_c_s3_DIR=/usr/lib/cmake/aws-c-s3
-        
-        echo "Configuring with all dependencies..."
-        # Configure with updated paths and options
-        # Use USE_S2N=OFF to disable s2n dependency
-        cmake -DCMAKE_PREFIX_PATH=/usr -DUSE_S2N=OFF ..
-        
-        # If the above fails, try with more explicit paths
-        if [ $? -ne 0 ]; then
-          echo "First configure attempt failed, trying with explicit paths..."
-          cmake \
-            -DCMAKE_PREFIX_PATH=/usr \
-            -DUSE_S2N=OFF \
-            -Daws-checksums_DIR=/usr/lib/cmake/aws-checksums \ # Added dependency
-            -Daws-c-common_DIR=/usr/lib/cmake/aws-c-common \
-            -Daws-c-cal_DIR=/usr/lib/cmake/aws-c-cal \
-            -Daws-c-sdkutils_DIR=/usr/lib/cmake/aws-c-sdkutils \
-            -Daws-c-compression_DIR=/usr/lib/cmake/aws-c-compression \
-            -Daws-c-io_DIR=/usr/lib/cmake/aws-c-io \
-            -Daws-c-http_DIR=/usr/lib/cmake/aws-c-http \
-            -Daws-c-auth_DIR=/usr/lib/cmake/aws-c-auth \
-            -Daws-c-mqtt_DIR=/usr/lib/cmake/aws-c-mqtt \
-            -Daws-c-event-stream_DIR=/usr/lib/cmake/aws-c-event-stream \
-            -Daws-c-s3_DIR=/usr/lib/cmake/aws-c-s3 \
-            ..
-        fi
+      run: cmake ..
       working-directory: ${{ github.workspace }}/build
       
     # List Build Directory After Configure
