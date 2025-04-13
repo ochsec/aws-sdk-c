@@ -1,0 +1,4 @@
+Dependency: aws-c-compression
+Location: /Users/chrisochsenreither/github/aws-sdk/aws-c-compression
+Commit Hash: 5b828dc9c27de781c301fcc58dbdb61f5c23b9fd
+Extracted At: 2025-04-13 05:14:09 UTC

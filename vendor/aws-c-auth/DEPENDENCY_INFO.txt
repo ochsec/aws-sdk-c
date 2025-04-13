@@ -1,0 +1,4 @@
+Dependency: aws-c-auth
+Location: /Users/chrisochsenreither/github/aws-sdk/aws-c-auth
+Commit Hash: 9d904153eb187e5a553258de2433f740cd46813e
+Extracted At: 2025-04-13 05:13:54 UTC

@@ -18,6 +18,7 @@ add_library(aws-sdk-c-core
     # Add core source files here
     # For now, we'll create a placeholder file
     ${CMAKE_CURRENT_SOURCE_DIR}/core_placeholder.c
+    ${CMAKE_CURRENT_SOURCE_DIR}/auth/sigv4.c
     # ${CMAKE_CURRENT_SOURCE_DIR}/io/tee_input_stream.c # Remove incompatible source
 )
 

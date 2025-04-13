@@ -1,0 +1,4 @@
+Dependency: aws-c-io
+Location: /Users/chrisochsenreither/github/aws-sdk/aws-c-io
+Commit Hash: f1583cdd460107812076209a7ef8e62b9bca1a27
+Extracted At: 2025-04-13 05:14:07 UTC

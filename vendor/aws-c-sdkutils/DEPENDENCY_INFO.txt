@@ -1,0 +1,4 @@
+Dependency: aws-c-sdkutils
+Location: /Users/chrisochsenreither/github/aws-sdk/aws-c-sdkutils
+Commit Hash: cf41cd37631fdbea6d2354e7f6769c487d8dae3e
+Extracted At: 2025-04-13 05:14:10 UTC
